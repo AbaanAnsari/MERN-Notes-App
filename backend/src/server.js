@@ -9,6 +9,7 @@ import notesRoute from "./Route/notesRoute.js";
 import { connectDB } from "./config/db.js";
 import rateLimiter from "./middleware/ratelimiter.js";
 import User from "./models/User.js"
+import authenticateToken from "./utilities.js";
 
 
 
@@ -74,6 +75,7 @@ app.post("/create-account", async (req, res) => {
     })
 });
 
+//Login Account
 app.post("/login", async (req, res) => {
     const { email, password } = req.body;
     if (!email) {
@@ -110,6 +112,22 @@ app.post("/login", async (req, res) => {
     }
 
 })
+
+//Get User
+app.get("/get-user",authenticateToken, async (req, res) => {
+    const { user } = req.user;
+
+    const isUser = await User.findOne({ _id: user._id });
+
+    if (!isUser) {
+        return res.status(401);
+    }
+
+    return res.json({
+        user: isUser,
+        message: "",
+    });
+});
 
 
 //routes
