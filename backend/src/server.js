@@ -16,7 +16,7 @@ import authenticateToken from "./utilities.js";
 dotenv.config();
 
 const app = express();
-const PORT = process.env.Port || 5001;
+const PORT = process.env.PORT || 5001;
 const __dirname = path.resolve()
 
 
@@ -25,8 +25,10 @@ const __dirname = path.resolve()
 //middlewares
 if (process.env.NODE_ENV !== "production") {
     app.use(cors({
-        origin: "http://localhost:5173",
-    }))
+    origin: "http://localhost:5173",
+    allowedHeaders: ["Content-Type", "Authorization"],
+}));
+
 }
 
 app.use(express.json());
@@ -63,7 +65,8 @@ app.post("/create-account", async (req, res) => {
     await user.save();
 
     const accessToken = jwt.sign(
-        { user }, process.env.ACCESS_TOKEN_SCRIPT,
+        { userId: user._id },
+        process.env.ACCESS_TOKEN_SCRIPT,
         { expiresIn: "30m" }
     );
 
@@ -114,7 +117,7 @@ app.post("/login", async (req, res) => {
 })
 
 //Get User
-app.get("/get-user",authenticateToken, async (req, res) => {
+app.get("/get-user", authenticateToken, async (req, res) => {
     const { user } = req.user;
 
     const isUser = await User.findOne({ _id: user._id });
@@ -124,14 +127,14 @@ app.get("/get-user",authenticateToken, async (req, res) => {
     }
 
     return res.json({
-        user: isUser,
+        user: {fullName: isUser.fullName, email: isUser.email, password: isUser.password},
         message: "",
     });
 });
 
 
 //routes
-app.use("/api/notes", notesRoute);
+app.use("/api/notes",authenticateToken, notesRoute);
 
 if (process.env.NODE_ENV === "production") {
     app.use(express.static(path.join(__dirname, "../frontend/dist")))
