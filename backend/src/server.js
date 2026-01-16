@@ -5,7 +5,7 @@ import dotenv from "dotenv";
 import path from "path"
 import jwt from "jsonwebtoken"
 
-import notesRoute from "./Route/notesRoute.js";
+import notesRoute from "./routes/notesRoute.js";
 import { connectDB } from "./config/db.js";
 import rateLimiter from "./middleware/ratelimiter.js";
 import User from "./models/User.js"

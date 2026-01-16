@@ -1,14 +1,17 @@
 
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import PasswordInput from "../components/input/PasswordInput";
 import { useState } from "react";
 import { validateEmail } from "../lib/helper";
 import toast from "react-hot-toast";
+import axiosInstance from "../lib/axios";
 
 const Login = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState(null)
+
+    const navigate = useNavigate();
 
     const handleLogin = async (e) => {
         e.preventDefault();
@@ -23,8 +26,28 @@ const Login = () => {
             return;
         }
 
-
         setError("");
+
+        //try login api call
+        try {
+            const response = await axiosInstance.post("/login", {
+                email: email,
+                password: password,
+            });
+
+            //Handle Login Success
+            if (response.data && response.data.accessToken) { 
+                localStorage.setItem("accessToken", response.data.accessToken);
+                navigate("/")
+            }
+        } catch (error) {
+            //Handle Login Error
+            if (error.response && error.response.data && error.response.data.message) {
+                setError(error.response.data.message);
+            } else {
+                setError("Login failed. Please try again.");
+            }
+        }
     };
 
 
